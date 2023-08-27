@@ -1,0 +1,98 @@
+<!-- 
+  Copyright © [2023] [Dustin_Chen]. All rights reserved.
+  Author: Dustin Chen
+  Email:  Dustin_Chen@compal.com or chuhpsdustin@gmail.com
+  
+  example: 
+	Srxlev = Qrxlevmeas – (Qrxlevmin + Qrxlevminoffset )– Pcompensation - Qoffsettemp
+	ex: Qrxlevmeas(-49) - (Qrxlevmin(-120) + Qrxlevminoffset(0)) - Pcompensation(10) - Qoffsettemp(0) = 61
+	
+	Pcompensation = max(p-Max – MTPL, 0)
+	ex: SIB1 p-Max 33, UeCapabilityInformation n78 ue-PowerClass is pc3, so MTPL=23. So Pcompensation = 33-23 = 10.
+-->  
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Cell Selection Criterion S: Srxlev Calculator</title>
+<style>
+    /* 調整輸入框的寬度 */
+    input[type="number"] {
+        width: 50px;
+    }
+	.red-text {
+        color: red; /* 設定紅色文字 */
+    }
+</style>
+<script>
+function calculateSrxlev() {
+    var Qrxlevmeas = parseFloat(document.getElementById('Qrxlevmeas').value);
+    var qRxLevMin = parseFloat(document.getElementById('qRxLevMin').value);
+    var Qrxlevminoffset = parseFloat(document.getElementById('Qrxlevminoffset').value);
+    var pMax = parseFloat(document.getElementById('pMax').value);
+    var MTPL = parseFloat(document.getElementById('MTPL').value);
+    var Qoffsettemp = parseFloat(document.getElementById('Qoffsettemp').value);
+
+    var Qrxlevmin = qRxLevMin * 2;
+    var Pcompensation = Math.max(pMax - MTPL, 0);
+    var Srxlev = Qrxlevmeas - (Qrxlevmin + Qrxlevminoffset) - Pcompensation - Qoffsettemp;
+
+    var calculationDetails = ` Qrxlevmin = q-RxLevMin * 2 = ${qRxLevMin} * 2 = ${Qrxlevmin.toFixed(2)}
+        Pcompensation = max(p-Max - MTPL, 0) = max(${pMax} - ${MTPL}, 0) = ${Pcompensation.toFixed(2)}
+        Srxlev = Qrxlevmeas - (Qrxlevmin + Qrxlevminoffset) - Pcompensation - Qoffsettemp
+            = ${Qrxlevmeas.toFixed(2)} - (${Qrxlevmin.toFixed(2)} + ${Qrxlevminoffset.toFixed(2)}) - ${Pcompensation.toFixed(2)} - ${Qoffsettemp.toFixed(2)}
+            = ${Srxlev.toFixed(2)}    `;
+
+    document.getElementById('calculationDetails').innerText = calculationDetails;
+    document.getElementById('result').innerText = `Srxlev: ${Srxlev.toFixed(2)}`;
+}
+</script>
+</head>
+<body>
+<h1> Cell Selection Criterion S: Srxlev Calculator</h1>
+<form>
+	<p style="margin: 0;">Author: Dustin_Chen, email: <a href="mailto:Dustin_Chen@compal.com" style="line-height: 1;">Dustin_Chen@compal.com</a> or <a href="mailto:chuhpsdustin@gmail.com" style="line-height: 1;">chuhpsdustin@gmail.com</a></p>	
+	<p>
+<b>◼️ 3GPP Spec<br></b>
+<b>&nbsp; &nbsp;&nbsp;&nbsp;● TS 38.304 chap 5.2.3.2 Cell Selection Criterion</b> <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; The cell selection criterion S is fulfilled when: <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <span class="red-text">Srxlev > 0</span> AND <span class="red-text">Squal > 0</span> <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; where: <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <span class="red-text">Srxlev = Qrxlevmeas – (Qrxlevmin + Qrxlevminoffset ) – Pcompensation – Qoffsettemp</span> <br> 
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <span class="red-text">Pcompensation = max(p-Max – MTPL, 0)</span> <br>
+
+<b>&nbsp;&nbsp;&nbsp; &nbsp;● TS 38 101-1 Table 6.2.1-1: UE Power Class</b> <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; UeCapabilityInformation ue-PowerClass pc2 => MTPL = 26 dBm <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; UeCapabilityInformation ue-PowerClass pc3 => MTPL = 23 dBm <br>
+
+<b>&nbsp;&nbsp;&nbsp; &nbsp;● TS 38 331 Q-RxLevMin</b> <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; Actual value <span class="red-text">Q rxlevmin  = field value * 2 [dBm].</span>  <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; SIB1 ::=        SEQUENCE { <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;    cellSelectionInfo  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  SEQUENCE { <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  q-RxLevMin  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Q-RxLevMin, <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  q-RxLevMinOffset &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;  INTEGER (1..8) OPTIONAL,   -- Need R <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;    } </p>
+	<label><b>◼️ Please enter the value below to calculate the Srxlev </b><br></label>
+	<label for="Qrxlevmeas">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;● Qrxlevmeas(UE meas RSRP):</label>
+    <input type="number" id="Qrxlevmeas" step="0.01" required value="-49"><br>
+    <label for="qRxLevMin">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;● q-RxLevMin(From SIB1):</label>
+    <input type="number" id="qRxLevMin" step="0.01" required value="-60"><br>
+    <label for="Qrxlevminoffset">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;● Qrxlevminoffset(From SIB1, INTEGER (1..8)):</label>
+    <input type="number" id="Qrxlevminoffset" step="0.01" required value="0"><br>
+    <label for="pMax">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;● p-Max (from SIB1):</label>
+    <input type="number" id="pMax" step="0.01" required value="33"><br>
+    <label for="MTPL">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;● MTPL (from UeCapabilityInformation ue-PowerClass pc3 is 23dBm, ue-PowerClass pc2 is 26dBm ):</label>
+    <input type="number" id="MTPL" step="0.01" required value="23"><br>
+    <label for="Qoffsettemp">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;● Qoffsettemp:</label>
+    <input type="number" id="Qoffsettemp" step="0.01" required value="0"><br>
+    <input type="button" value="Calculate" onclick="calculateSrxlev()">
+</form>
+<p id="calculationDetails"></p>
+<p id="result"></p>
+  <p>========================================================================================<br></p>
+  <p><b>Appendix: 3GPP TS 38.304 chap 5.2.3.2 Cell Selection Criterion </b></p>
+  <img src="https://raw.githubusercontent.com/dustinchen26/S_criteria/master/formula.png" alt="GitHub Image" width="1200">
+
+
+</body>
+</html>
